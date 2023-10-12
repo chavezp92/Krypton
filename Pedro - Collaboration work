@@ -1,0 +1,20 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+excel_salary = '/Users/pedrochavez/Desktop/salary_data_states.xlsx'
+df = pd.read_excel(excel_salary)
+
+print(df)
+
+print(df.columns)
+
+df['PAID_WAGE_SUBMITTED'] = pd.to_numeric(df['PAID_WAGE_SUBMITTED'], errors='coerce')
+
+mean_paid_wage_by_state = df.groupby('WORK_STATE')['PAID_WAGE_SUBMITTED'].mean()
+
+print(mean_paid_wage_by_state)
+
+mean_paid_wage_by_state_sorted = mean_paid_wage_by_state.sort_values(ascending=False)
+
+print(mean_paid_wage_by_state_sorted)
