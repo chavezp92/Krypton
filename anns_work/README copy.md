@@ -1,6 +1,7 @@
 # Krypton
 GitHub Project
 
-Making first edits. Simply to get the idea of creating the Branch and then being able to add new members. 
+Ipynb created to use python to find 
+	- the average paid wage per year for each job title sub group 
+	- the average paid wage per year for each visa class
 
-Contributor edit by Ann
