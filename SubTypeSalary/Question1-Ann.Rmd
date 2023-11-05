@@ -1,0 +1,30 @@
+---
+title: "Question 1 -Ann"
+output: html_document
+date: "2023-11-03"
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Do specific sub-types of data-related jobs have higher or lower salaries than others? 
+library(readxl)
+salary_data <- read_excel("Desktop/salary_data_states.xlsx")
+
+library(dplyr)
+salary_data %>%
+  group_by(JOB_TITLE_SUBGROUP) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
+  arrange(AvgSalary)
+
+# Which companies have the highest salaries for those sub-types? 
+
+
+# Changes with location of the job? 
+# Will the answer change if I take standard of living into account?
+
+
+library(magrittr)
+install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
