@@ -16,15 +16,42 @@ salary_data %>%
   group_by(JOB_TITLE_SUBGROUP) %>%
   summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
   arrange(AvgSalary)
+  
+library(ggplot2)
+ggplot(data = salary_data, aes(x = JOB_TITLE_SUBGROUP, y = AvgSalary, fill = JOB_TITLE_SUBGROUP)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Salaries of Job Subgroups",
+       x = "Sub Group",
+       y = "Average Salary")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Which companies have the highest salaries for those sub-types? 
-
+salary_data %>%
+  group_by(JOB_TITLE_SUBGROUP, EMPLOYER_NAME) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
+  arrange(AvgSalary, JOB_TITLE_SUBGROUP)
+  
+ggplot(summary_data, aes(x = EMPLOYER_NAME, y = AvgSalary, fill = JOB_TITLE_SUBGROUP)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Companies with the Highest Salaries for Job Subgroups",
+       x = "Employer Name",
+       y = "Average Salary") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 
 # Changes with location of the job? 
+salary_data %>%
+  group_by(JOB_TITLE_SUBGROUP, WORK_STATE) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
+  arrange(WORK_STATE, AvgSalary)
+
+ggplot(salary_data, aes(x = WORK_STATE, y = AvgSalary, fill = JOB_TITLE_SUBGROUP)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black", alpha = 0.8) +
+  labs(title = "Average Salaries Across Different Locations for Job Subgroups",
+       x = "Work State",
+       y = "Average Salary") +
+  theme_minimal()
+
 # Will the answer change if I take standard of living into account?
 
-
-library(magrittr)
-install.packages("dplyr")
-library(dplyr)
-library(ggplot2)
+# I don't think standard of living affects the the wage paid per year rather the wage paid perr year may have an impact on the standards of living. Additioinally any impact the standard of liviing will have on wage will most likely be captured in the location of the job
