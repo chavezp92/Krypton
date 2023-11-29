@@ -11,8 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
 library(dplyr)
 library(ggplot2)
+<<<<<<< HEAD
 #setwd("~/Desktop/random/Krypton/SubTypeSalary")
 salary_data <- read_excel("../salary_data_states.xlsx")
+=======
+
+salary_data <- read_excel("Desktop/salary_data_states.xlsx")
+>>>>>>> 13bd27d (Added graph images for presentation)
 
 selected_groups <- c('data analyst', 'business analyst', 'data scientist')
 useful_data <- salary_data %>%
