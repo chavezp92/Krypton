@@ -88,8 +88,3 @@ not_datascientist <- highest_salary_jobs %>%
   filter(JOB_TITLE_SUBGROUP != "data scientist")
 
 ```
-
-
-
-# Will the answer change if I take standard of living into account?
-
