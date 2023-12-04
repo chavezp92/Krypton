@@ -6,76 +6,90 @@ date: "2023-11-03"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 ```{r}
 library(readxl)
 library(dplyr)
 library(ggplot2)
-<<<<<<< HEAD
-#setwd("~/Desktop/random/Krypton/SubTypeSalary")
-salary_data <- read_excel("../salary_data_states.xlsx")
-=======
 
-salary_data <- read_excel("Desktop/salary_data_states.xlsx")
->>>>>>> 13bd27d (Added graph images for presentation)
-
+salary_data <- read_excel("~/Desktop/salary_data_states.xlsx")
 selected_groups <- c('data analyst', 'business analyst', 'data scientist')
 useful_data <- salary_data %>%
   filter (JOB_TITLE_SUBGROUP %in% selected_groups)
 ```
-
 ```{r}
 # Do specific sub-types of data-related jobs have higher or lower salaries than others? 
-useful_data %>%
+summary_data <- useful_data %>%
   group_by(JOB_TITLE_SUBGROUP) %>%
-  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
+    summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
   arrange(AvgSalary)
-  
-ggplot(data = useful_data, aes(x = JOB_TITLE_SUBGROUP, y = mean(PAID_WAGE_PER_YEAR), fill = JOB_TITLE_SUBGROUP)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Average Salaries of Job Subgroups",
-       x = "Sub Group",
-       y = "Average Salary")+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
 
-```{r}
-# Which companies have the highest salaries for those sub-types? 
-useful_data %>%
-  group_by(JOB_TITLE_SUBGROUP, EMPLOYER_NAME) %>%
-  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
-  arrange(JOB_TITLE_SUBGROUP, desc(AvgSalary)) %>%
-  top_n(1)
-  
-ggplot(summary_data, aes(x = EMPLOYER_NAME, y = AvgSalary, fill = JOB_TITLE_SUBGROUP)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Companies with the Highest Salaries for Job Subgroups",
-       x = "Employer Name",
-       y = "Average Salary") +
+ggplot(useful_data, aes(x = CASE_NUMBER, y = PAID_WAGE_PER_YEAR, color = JOB_TITLE_SUBGROUP)) +
+  geom_point() +
+  labs(title = "Paid Wage Per Year of Job Title Subgroups",
+       y = "Paid wage per year") +
+  scale_fill_manual(values = c("data analyst" = "blue", "data scientist" = "red", "business analyst" = "green")) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
-```
+  coord_cartesian(ylim = c(100, 300000))
 
-```{r}
-# Changes with location of the job? 
-useful_data %>%
-  group_by(WORK_STATE) %>%
-  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
-  
-
-ggplot(useful_data, aes(x = WORK_STATE, y = mean(PAID_WAGE_PER_YEAR), fill = JOB_TITLE_SUBGROUP)) +
-  geom_bar(stat = "identity", position = "dodge", color = "black", alpha = 0.8) +
-  labs(title = "Average Salaries Across Different Locations for Job Subgroups",
-       x = "Work State",
-       y = "Average Salary") +
+ggplot(useful_data, aes(x = JOB_TITLE_SUBGROUP, y = PAID_WAGE_PER_YEAR)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Paid Wage Per Year by Job Title Subgroups",
+       x = "Job Title Subgroup",
+       y = "Paid Wage Per Year") +
   theme_minimal()
 ```
 
 
 ```{r}
-# Will the answer change if I take standard of living into account?
+# Which companies have the highest salaries for those sub-types? 
+employer <- useful_data %>%
+  group_by(JOB_TITLE_SUBGROUP, EMPLOYER_NAME) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR), .groups = 'drop') %>%
+  arrange(JOB_TITLE_SUBGROUP, desc(AvgSalary)) %>%
+  top_n(10, AvgSalary)
 
-# I don't think standard of living affects the the wage paid per year rather the wage paid perr year may have an impact on the standards of living. Additioinally any impact the standard of liviing will have on wage will most likely be captured in the location of the job
+ggplot(employer, aes(x = EMPLOYER_NAME, y = AvgSalary, fill = JOB_TITLE_SUBGROUP)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top Employers with the Highest Average Salaries for Each Job Subgroup",
+       x = "Employer Name",
+       y = "Average Salary") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) +
+  scale_x_discrete(labels = scales::wrap_format(20))
+
+ggplot(subset(useful_data, EMPLOYER_NAME == "NETFLIX"), aes(x = CASE_NUMBER, y = PAID_WAGE_PER_YEAR, color = JOB_TITLE_SUBGROUP)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Wages for Netflix",
+       x = "Case Number",
+       y = "Paid Wage Per Year") +
+    scale_fill_manual(values = c("data analyst" = "blue", "data scientist" = "red", "business analyst" = "green")) +
+  theme_minimal()
+
+```
+```{r}
+# Changes with location of the job? 
+location_data <- useful_data %>%
+  group_by(JOB_TITLE_SUBGROUP, WORK_STATE) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR), .groups = 'drop') %>%
+  arrange(WORK_STATE, AvgSalary)
+
+# highest job title in each state
+highest_salary_jobs <- location_data %>%
+  group_by(WORK_STATE) %>%
+  slice(which.max(AvgSalary))
+  
+# Count the number of states in each job title subgroup
+state_count_per_job <- highest_salary_jobs %>%
+  group_by(JOB_TITLE_SUBGROUP) %>%
+  summarise(StateCount = n_distinct(WORK_STATE))
+
+# filter states where highest job isnt data scientist
+not_datascientist <- highest_salary_jobs %>%
+  filter(JOB_TITLE_SUBGROUP != "data scientist")
+
 ```
 
+
+
+# Will the answer change if I take standard of living into account?
 
