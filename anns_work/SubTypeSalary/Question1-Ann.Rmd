@@ -1,0 +1,90 @@
+---
+title: "Question 1 -Ann"
+output: html_document
+date: "2023-11-03"
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+
+salary_data <- read_excel("~/Desktop/salary_data_states.xlsx")
+selected_groups <- c('data analyst', 'business analyst', 'data scientist')
+useful_data <- salary_data %>%
+  filter (JOB_TITLE_SUBGROUP %in% selected_groups)
+```
+```{r}
+# Do specific sub-types of data-related jobs have higher or lower salaries than others? 
+summary_data <- useful_data %>%
+  group_by(JOB_TITLE_SUBGROUP) %>%
+    summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR)) %>%
+  arrange(AvgSalary)
+
+ggplot(useful_data, aes(x = CASE_NUMBER, y = PAID_WAGE_PER_YEAR, color = JOB_TITLE_SUBGROUP)) +
+  geom_point() +
+  labs(title = "Paid Wage Per Year of Job Title Subgroups",
+       y = "Paid wage per year") +
+  scale_fill_manual(values = c("data analyst" = "blue", "data scientist" = "red", "business analyst" = "green")) +
+  theme_minimal() +
+  coord_cartesian(ylim = c(100, 300000))
+
+ggplot(useful_data, aes(x = JOB_TITLE_SUBGROUP, y = PAID_WAGE_PER_YEAR)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Paid Wage Per Year by Job Title Subgroups",
+       x = "Job Title Subgroup",
+       y = "Paid Wage Per Year") +
+  theme_minimal()
+```
+
+
+```{r}
+# Which companies have the highest salaries for those sub-types? 
+employer <- useful_data %>%
+  group_by(JOB_TITLE_SUBGROUP, EMPLOYER_NAME) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR), .groups = 'drop') %>%
+  arrange(JOB_TITLE_SUBGROUP, desc(AvgSalary)) %>%
+  top_n(10, AvgSalary)
+
+ggplot(employer, aes(x = EMPLOYER_NAME, y = AvgSalary, fill = JOB_TITLE_SUBGROUP)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top Employers with the Highest Average Salaries for Each Job Subgroup",
+       x = "Employer Name",
+       y = "Average Salary") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) +
+  scale_x_discrete(labels = scales::wrap_format(20))
+
+ggplot(subset(useful_data, EMPLOYER_NAME == "NETFLIX"), aes(x = CASE_NUMBER, y = PAID_WAGE_PER_YEAR, color = JOB_TITLE_SUBGROUP)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Wages for Netflix",
+       x = "Case Number",
+       y = "Paid Wage Per Year") +
+    scale_fill_manual(values = c("data analyst" = "blue", "data scientist" = "red", "business analyst" = "green")) +
+  theme_minimal()
+
+```
+```{r}
+# Changes with location of the job? 
+location_data <- useful_data %>%
+  group_by(JOB_TITLE_SUBGROUP, WORK_STATE) %>%
+  summarize(AvgSalary = mean(PAID_WAGE_PER_YEAR), .groups = 'drop') %>%
+  arrange(WORK_STATE, AvgSalary)
+
+# highest job title in each state
+highest_salary_jobs <- location_data %>%
+  group_by(WORK_STATE) %>%
+  slice(which.max(AvgSalary))
+  
+# Count the number of states in each job title subgroup
+state_count_per_job <- highest_salary_jobs %>%
+  group_by(JOB_TITLE_SUBGROUP) %>%
+  summarise(StateCount = n_distinct(WORK_STATE))
+
+# filter states where highest job isnt data scientist
+not_datascientist <- highest_salary_jobs %>%
+  filter(JOB_TITLE_SUBGROUP != "data scientist")
+
+```
